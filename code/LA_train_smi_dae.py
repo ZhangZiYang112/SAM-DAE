@@ -429,7 +429,7 @@ def pre_train(args, snapshot_path):
         if epoch_num % 5 == 0:
             model.eval()
             dice_sample = test_3d_patch.var_all_case_LA(model, num_classes=num_classes, patch_size=patch_size,
-                                                        stride_xy=18, stride_z=4)
+                                                        stride_xy=18, stride_z=4, data_root=train_data_path)
             if dice_sample > best_dice:
                 best_dice = round(dice_sample, 4)
                 save_mode_path = os.path.join(snapshot_path, 'iter_{}_dice_{}.pth'.format(iter_num, best_dice))
@@ -442,7 +442,7 @@ def pre_train(args, snapshot_path):
 
             model2.eval()
             dice_sample2 = test_3d_patch.var_all_case_LA(model2, num_classes=num_classes, patch_size=patch_size,
-                                                         stride_xy=18, stride_z=4)
+                                                         stride_xy=18, stride_z=4, data_root=train_data_path)
             if dice_sample2 > best_dice2:
                 best_dice2 = round(dice_sample2, 4)
                 save_mode_path = os.path.join(snapshot_path, 'iter_{}_dice_{}_resnet.pth'.format(iter_num, best_dice2))
@@ -764,11 +764,12 @@ def self_train(args, pre_snapshot_path, self_snapshot_path, dae_model_path=None)
             model1.eval()
             model2.eval()
             dice_sample = test_3d_patch.var_all_case_LA(model1, num_classes=num_classes, patch_size=patch_size,
-                                                        stride_xy=18, stride_z=4)
+                                                        stride_xy=18, stride_z=4, data_root=train_data_path)
             dice_sample2 = test_3d_patch.var_all_case_LA(model2, num_classes=num_classes, patch_size=patch_size,
-                                                         stride_xy=18, stride_z=4)
+                                                         stride_xy=18, stride_z=4, data_root=train_data_path)
             mean_dice_sample = test_3d_patch.var_all_case_LA_mean(model1, model2, num_classes=num_classes,
-                                                                  patch_size=patch_size, stride_xy=18, stride_z=4)
+                                                                  patch_size=patch_size, stride_xy=18, stride_z=4,
+                                                                  data_root=train_data_path)
 
             if dice_sample > best_dice:
                 best_dice = round(dice_sample, 4)

@@ -2,6 +2,7 @@ import h5py
 import math
 import nibabel as nib
 import numpy as np
+import os
 from medpy import metric
 import torch
 import torch.nn.functional as F
@@ -18,10 +19,18 @@ def getLargestCC(segmentation):
     return largestCC
 
 
-def var_all_case_LA_mean(model1, model2, num_classes, patch_size=(112, 112, 80), stride_xy=18, stride_z=4):
-    with open('./Datasets/la/data_split/test.txt', 'r') as f:
-        image_list = f.readlines()
-    image_list = ["./Datasets/la/data/2018LA_Seg_Training Set/" + item.replace('\n', '') + "/mri_norm2.h5" for item in image_list]
+def build_la_image_list(data_root=None):
+    data_root = data_root or os.environ.get("LA_DATA_ROOT", "code/Datasets/la/data_split")
+    split_file = os.path.join(data_root, "test.txt")
+    data_dir = os.path.join(data_root, "2018LA_Seg_Training Set")
+    with open(split_file, 'r') as f:
+        case_ids = [item.strip() for item in f.readlines() if item.strip()]
+    return [os.path.join(data_dir, case_id, "mri_norm2.h5") for case_id in case_ids]
+
+
+def var_all_case_LA_mean(model1, model2, num_classes, patch_size=(112, 112, 80), stride_xy=18, stride_z=4,
+                         data_root=None):
+    image_list = build_la_image_list(data_root)
     loader = tqdm(image_list)
     total_dice = 0.0
     for image_path in loader:
@@ -108,16 +117,14 @@ def test_single_case_mean(model1, model2, image, stride_xy, stride_z, patch_size
                 cnt[xs:xs + patch_size[0], ys:ys + patch_size[1], zs:zs + patch_size[2]] \
                     = cnt[xs:xs + patch_size[0], ys:ys + patch_size[1], zs:zs + patch_size[2]] + 1
     score_map = score_map / np.expand_dims(cnt, axis=0)
-    label_map = (score_map[0] > 0.5).astype(np.int)
+    label_map = (score_map[0] > 0.5).astype(int)
     if add_pad:
         label_map = label_map[wl_pad:wl_pad + w, hl_pad:hl_pad + h, dl_pad:dl_pad + d]
         score_map = score_map[:, wl_pad:wl_pad + w, hl_pad:hl_pad + h, dl_pad:dl_pad + d]
     return label_map, score_map
-def var_all_case_LA(model, num_classes, patch_size=(112, 112, 80), stride_xy=18, stride_z=4):
+def var_all_case_LA(model, num_classes, patch_size=(112, 112, 80), stride_xy=18, stride_z=4, data_root=None):
    
-    with open('./Datasets/la/data_split/test.txt', 'r') as f:
-        image_list = f.readlines()
-    image_list = ["./Datasets/la/data/2018LA_Seg_Training Set/" + item.replace('\n', '') + "/mri_norm2.h5" for item in image_list]
+    image_list = build_la_image_list(data_root)
     loader = tqdm(image_list)
     total_dice = 0.0
     for image_path in loader:
@@ -271,7 +278,7 @@ def test_single_case(model, image, stride_xy, stride_z, patch_size, num_classes=
                 cnt[xs:xs+patch_size[0], ys:ys+patch_size[1], zs:zs+patch_size[2]] \
                   = cnt[xs:xs+patch_size[0], ys:ys+patch_size[1], zs:zs+patch_size[2]] + 1
     score_map = score_map/np.expand_dims(cnt,axis=0)
-    label_map = (score_map[0]>0.5).astype(np.int)
+    label_map = (score_map[0]>0.5).astype(int)
     if add_pad:
         label_map = label_map[wl_pad:wl_pad+w,hl_pad:hl_pad+h,dl_pad:dl_pad+d]
         score_map = score_map[:,wl_pad:wl_pad+w,hl_pad:hl_pad+h,dl_pad:dl_pad+d]
@@ -396,7 +403,7 @@ def test_single_case_plus(model_l, model_r, image, stride_xy, stride_z, patch_si
                 cnt[xs:xs+patch_size[0], ys:ys+patch_size[1], zs:zs+patch_size[2]] \
                   = cnt[xs:xs+patch_size[0], ys:ys+patch_size[1], zs:zs+patch_size[2]] + 1
     score_map = score_map/np.expand_dims(cnt,axis=0)
-    label_map = (score_map[0]>0.5).astype(np.int)
+    label_map = (score_map[0]>0.5).astype(int)
     if add_pad:
         label_map = label_map[wl_pad:wl_pad+w,hl_pad:hl_pad+h,dl_pad:dl_pad+d]
         score_map = score_map[:,wl_pad:wl_pad+w,hl_pad:hl_pad+h,dl_pad:dl_pad+d]
