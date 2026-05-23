@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.hf_cache/
+**/.hf_cache/
+
+# Training outputs and logs
+runs/
+logs/
+*.log
+code/model/
+model/
+
+# Large model checkpoints. Use Git LFS or place them manually on the server.
+*.pth
+*.pt
+*.ckpt
+code/segment_anything/ckpt/
+
+# Large medical image data. Keep split txt/list files in git, but not raw volumes.
+*.h5
+*.nii
+*.nii.gz
+*.part
+code/Datasets/**/2018LA_Seg_Training Set/
+code/Datasets/**/raw_hf*/
+code/Datasets/**/raw*/
+code/Datasets/**/tmp_*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini

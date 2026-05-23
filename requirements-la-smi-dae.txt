@@ -1,0 +1,15 @@
+# Tested local smoke-test environment:
+# Python 3.8.20, CUDA available, torch 2.4.1+cu118, torchvision 0.19.1+cu118
+#
+# Install PyTorch for your server CUDA version from:
+# https://pytorch.org/get-started/locally/
+
+numpy==1.24.1
+h5py==3.11.0
+scipy==1.10.1
+scikit-image==0.21.0
+medpy==0.5.2
+tensorboardX==2.6.2.2
+tqdm
+SimpleITK
+einops
