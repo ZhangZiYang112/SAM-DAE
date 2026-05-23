@@ -126,6 +126,106 @@ python -B code/LA_train_smi_dae.py --use_sam 0 --use_dae 1 --dae_weight 0.5 --gp
 python -B code/LA_train_smi_dae.py --use_sam 1 --use_dae 1 --sam_weight 0.1 --dae_weight 0.5 --gpu 0
 ```
 
+## Comparison Experiments
+
+The comparison experiments use SDCL as the base model and evaluate the gain from adding SAM-Med3D and DAE:
+
+| Experiment | `--exp` | SAM | DAE | Purpose |
+| --- | --- | --- | --- | --- |
+| SDCL | `SDCL_BASE` | off | off | Base semi-supervised SDCL |
+| SDCL+SAM | `SDCL_SAM` | on | off | Isolate SAM-Med3D consistency |
+| SDCL+DAE | `SDCL_DAE` | off | on | Isolate DAE pseudo-label refinement |
+| SDCL+SAM+DAE | `SDCL_SAM_DAE` | on | on | Full proposed setting |
+
+Run all LA comparison experiments on a Linux server:
+
+```bash
+bash experiments/la_ablation/run_all.sh
+```
+
+Equivalent PowerShell entry on Windows:
+
+```powershell
+.\experiments\la_ablation\run_all.ps1
+```
+
+Important environment variables for the shell script:
+
+```bash
+GPU=0
+ROOT_PATH=code/Datasets/la/data_split
+LABELNUM=8
+PRE_MAX_ITERATION=2000
+SELF_MAX_ITERATION=15000
+DAE_PRETRAIN_EPOCHS=100
+SAM_WEIGHT=0.1
+DAE_WEIGHT=0.5
+```
+
+Example with explicit settings:
+
+```bash
+GPU=0 \
+ROOT_PATH=code/Datasets/la/data_split \
+LABELNUM=8 \
+PRE_MAX_ITERATION=2000 \
+SELF_MAX_ITERATION=15000 \
+bash experiments/la_ablation/run_all.sh
+```
+
+The script first trains `SDCL_BASE`, then reuses its pre-training checkpoints for the three ablation variants. This keeps the comparison focused on the self-training losses rather than differences from random pre-training.
+
+For a quick script-level check with one self-training iteration per setting:
+
+```bash
+bash experiments/la_ablation/smoke_ablation.sh
+```
+
+This smoke script expects existing pretrain checkpoints at:
+
+```text
+code/model/SDCL/LA_SDCL_8_labeled/pre_train/
+```
+
+## Evaluation and Result Collection
+
+Evaluate all four comparison experiments:
+
+```bash
+bash experiments/la_ablation/evaluate_all.sh
+```
+
+PowerShell:
+
+```powershell
+.\experiments\la_ablation\evaluate_all.ps1
+```
+
+This runs `code/evaluate_LA_ablation.py` for each experiment and writes:
+
+```text
+results/la_ablation/SDCL_BASE_metrics.csv
+results/la_ablation/SDCL_SAM_metrics.csv
+results/la_ablation/SDCL_DAE_metrics.csv
+results/la_ablation/SDCL_SAM_DAE_metrics.csv
+results/la_ablation/summary_metrics.csv
+figures/la_ablation_metric_bars.png
+```
+
+Evaluate one experiment manually:
+
+```bash
+python -B code/evaluate_LA_ablation.py \
+  --root_path code/Datasets/la/data_split \
+  --method SDCL+SAM+DAE \
+  --snapshot code/model/SDCL/LA_SDCL_SAM_DAE_8_labeled/self_train \
+  --gpu 0 \
+  --detail 1 \
+  --nms 0 \
+  --save_result 0 \
+  --out_csv results/la_ablation/SDCL_SAM_DAE_metrics.csv
+```
+
 ## Outputs
 
 Default outputs are written under:

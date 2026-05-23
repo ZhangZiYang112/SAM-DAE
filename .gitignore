@@ -9,6 +9,8 @@ __pycache__/
 # Training outputs and logs
 runs/
 logs/
+results/
+figures/
 *.log
 code/model/
 model/
